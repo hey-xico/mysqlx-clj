@@ -3,7 +3,7 @@
             [clojure.string :refer [split]]
             [bond.james :as bond :refer [with-spy]]
             [mysqlx-clj.core :as target]
-            [mysqlx_clj.config.docker-lifecycle :as docker])
+            [mysqlx-clj.config.docker-lifecycle :as docker])
   (:import (clojure.lang ExceptionInfo)
            (java.util UUID)))
 
