@@ -47,10 +47,8 @@
   "Drops a schema"
   [^Session session ^String schema]
   (let [schemas (get-schema-names session)]
-    (if (some #(= schema %)  schemas)
-      (do (println "Calling drop")
-          (.dropSchema session schema))
-      (println "Not Calling drop"))))
+    (if (some #(= schema %) schemas)
+      (.dropSchema session schema))))
 
 (defn create-schema
   "Creates a schema"

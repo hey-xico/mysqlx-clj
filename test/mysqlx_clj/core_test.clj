@@ -14,10 +14,12 @@
       (split (.toString (UUID/randomUUID)) #"-"))))
 
 (use-fixtures :once (fn [f]
-                      (reset! container (docker/initialize))
-                      (f)
-                      (docker/destroy @container)
-                      ))
+                      (if (= (System/getenv "RUNNING_LOCAL") "true")
+                        (do (println "you must have docker-compose up and running when this flag is enabled")
+                            (f))
+                        (do (reset! container (docker/initialize))
+                            (f)
+                            (docker/destroy @container)))))
 (deftest connection-validations
   (testing "given valid credentials should start a valid session"
     (let [;given
