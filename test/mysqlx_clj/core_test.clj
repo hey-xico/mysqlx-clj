@@ -13,11 +13,11 @@
     (shuffle
       (split (.toString (UUID/randomUUID)) #"-"))))
 
-;(use-fixtures :once (fn [f]
-;                      (reset! container (docker/initialize))
-;                      (f)
-;                      (docker/destroy @container)
-;                      ))
+(use-fixtures :once (fn [f]
+                      (reset! container (docker/initialize))
+                      (f)
+                      (docker/destroy @container)
+                      ))
 (deftest connection-validations
   (testing "given valid credentials should start a valid session"
     (let [;given
