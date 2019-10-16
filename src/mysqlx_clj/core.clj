@@ -17,7 +17,7 @@
   [props]
   (let [props# (Properties.)
         stringified-keys (stringify-keys props)
-        f (fn [[k v]] (if (string? v) [k v] [k (.toString v)]))
+        f (fn [[k v]] (if (string? v) [k v] [k (str v)]))
         _ (.putAll props# (postwalk (fn [x] (if (map? x) (into {} (map f x)) x)) stringified-keys))]
     props#))
 
@@ -36,7 +36,7 @@
 (defn get-schema-names
   "Gets a list of all schema names present on the server"
   [^Session session]
-  (into [] (map #(.getName %) (.getSchemas session))))
+  (vec (map #(.getName %) (.getSchemas session))))
 
 (defn ^Schema get-schema
   "Get schema reference by name."
