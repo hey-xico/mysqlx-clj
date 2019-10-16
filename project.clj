@@ -3,7 +3,7 @@
   :url "https://github.com/Chicoalmeida/mysqlx-clj"
   :license {:name "Eclipse Public License"
             :url  "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[org.clojure/data.json "0.2.6"]
+  :dependencies [[cheshire "5.9.0"]
                  [mysql/mysql-connector-java "8.0.18"]]
   :plugins [[lein-cloverage "1.0.13"]
             [lein-shell "0.5.0"]
