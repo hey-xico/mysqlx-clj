@@ -52,7 +52,7 @@
           (.dropSchema session schema))
       (println "Not Calling drop"))))
 
-(defn create-schemagcb
+(defn create-schema
   "Creates a schema"
   [^Session session ^String schema-name]
   (try
@@ -60,8 +60,7 @@
     (catch Exception e
       (throw (ex-info (str "Unable to create schema: " (.getMessage e))
                       {:cause   (.getCause e)
-                       :message (.getMessage e)}))))
-  )
+                       :message (.getMessage e)})))))
 
 (defn get-url
   "Get the URL used to create this session."
@@ -95,7 +94,4 @@
     (catch Exception e
       (do
         (println "ERRO: " (.getMessage e))
-        (rollback session)
-        )
-      ))
-  )
+        (rollback session)))))

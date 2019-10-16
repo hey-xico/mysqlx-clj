@@ -2,7 +2,6 @@
   (:import (org.testcontainers.containers GenericContainer)
            (org.testcontainers.containers.wait.strategy Wait)))
 
-
 (def connection-properties
   {"MYSQL_DATABASE"      "mysqlx-clj"
    "MYSQL_USER"          "clj"
@@ -40,5 +39,4 @@
     30000))
 
 (defn destroy [container]
-  (.stop container)
-  )
+  (.stop container))
