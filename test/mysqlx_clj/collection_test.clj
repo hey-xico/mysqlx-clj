@@ -12,8 +12,8 @@
 (def container (atom nil))
 (defn random-string []
   (first
-   (shuffle
-    (split (.toString (UUID/randomUUID)) #"-"))))
+    (shuffle
+      (split (.toString (UUID/randomUUID)) #"-"))))
 
 (use-fixtures :once (fn [f]
                       (if (= (System/getenv "RUNNING_LOCAL") "true")
@@ -22,7 +22,13 @@
                         (do (reset! container (docker/initialize))
                             (f)
                             (docker/destroy @container)))))
-
+(def connection-props {:host     (docker/host-address @container)
+                       :port     (docker/host-port @container)
+                       :dbname   (docker/connection-properties "MYSQL_DATABASE")
+                       :user     (docker/connection-properties "MYSQL_USER")
+                       :password (docker/connection-properties "MYSQL_PASSWORD")})
+(defn given-valid-session [connection-props]
+  (core/open-session connection-props))
 
 ;
 ; TESTS
@@ -32,14 +38,7 @@
 (deftest insert-data
   (testing "given open session, valid collection name and document should insert and return result"
     (let [;given
-          connection-props {:host     (docker/host-address @container)
-                            :port     (docker/host-port @container)
-                            :dbname   (docker/connection-properties "MYSQL_DATABASE")
-                            :user     (docker/connection-properties "MYSQL_USER")
-                            :password (docker/connection-properties "MYSQL_PASSWORD")}
-          session (core/open-session connection-props)
-          schema (core/get-schema session (:dbname connection-props))
-
+          schema (core/get-schema (given-valid-session connection-props) (:dbname connection-props))
           collection (.createCollection schema (random-string))
 
           ;and
@@ -60,13 +59,7 @@
 
   (testing "given mode than one documents should insert and return all"
     (let [;given
-          connection-props {:host     (docker/host-address @container)
-                            :port     (docker/host-port @container)
-                            :dbname   (docker/connection-properties "MYSQL_DATABASE")
-                            :user     (docker/connection-properties "MYSQL_USER")
-                            :password (docker/connection-properties "MYSQL_PASSWORD")}
-          session (core/open-session connection-props)
-          schema (core/get-schema session (:dbname connection-props))
+          schema (core/get-schema (given-valid-session connection-props) (:dbname connection-props))
 
           collection (.createCollection schema (random-string))
 
@@ -90,13 +83,7 @@
 (deftest find-by-id
   (testing "given if of existing document should return document"
     (let [;given
-          connection-props {:host     (docker/host-address @container)
-                            :port     (docker/host-port @container)
-                            :dbname   (docker/connection-properties "MYSQL_DATABASE")
-                            :user     (docker/connection-properties "MYSQL_USER")
-                            :password (docker/connection-properties "MYSQL_PASSWORD")}
-          session (core/open-session connection-props)
-          schema (core/get-schema session (:dbname connection-props))
+          schema (core/get-schema (given-valid-session connection-props) (:dbname connection-props))
 
           collection (.createCollection schema (random-string))
 
@@ -119,14 +106,7 @@
 
   (testing "given if not present should return nil"
     (let [;given
-          connection-props {:host     (docker/host-address @container)
-                            :port     (docker/host-port @container)
-                            :dbname   (docker/connection-properties "MYSQL_DATABASE")
-                            :user     (docker/connection-properties "MYSQL_USER")
-                            :password (docker/connection-properties "MYSQL_PASSWORD")}
-          session (core/open-session connection-props)
-          schema (core/get-schema session (:dbname connection-props))
-
+          schema (core/get-schema (given-valid-session connection-props) (:dbname connection-props))
           collection (.createCollection schema (random-string))
           ;and
           result (target/find-by-id collection (random-string))]
@@ -134,3 +114,27 @@
       (is (nil? result))
       ;after
       (.dropCollection schema (.getName collection)))))
+
+(deftest find-statements
+  (testing "finding by single field"
+    (let [;given
+          schema (core/get-schema (given-valid-session connection-props) (:dbname connection-props))
+          collection (.createCollection schema (random-string))
+
+          ;and
+          id-fxt (random-string)
+          document-fxt {:_id  id-fxt
+                        :name (random-string)}
+          query-fxt {:eq {:field "_id"
+                          :value id-fxt}}
+          ;and
+          _ (target/insert! collection document-fxt)
+
+          ;when
+          result (target/find collection query-fxt)]
+      (is (not (nil? result)))
+      (is (= (:name document-fxt)
+             (:name result)))
+      ;after
+      (.dropCollection schema (.getName collection)))))
+
