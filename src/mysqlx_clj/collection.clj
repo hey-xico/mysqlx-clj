@@ -26,12 +26,19 @@
       (find-by-id collection (first ids)))
     (reduce #(conj %1 (insert! collection %2)) [] document)))
 
+(defn- get-conditions
+  [logical-operator query]
+  (if logical-operator
+    (let [c (get query (first (keys query)))]
+      (when (map? (get query (first (keys query))))
+        (throw (ex-info (str "Illegal query construction: " query)
+                        {:message (str "When using logical operator, the comparisons must be inside a vector:" q/sample-logical-query)})))
+      c)
+    [query]))
 (defn find [collection query]
-  (do-find  (if (some (set (keys q/logical-query-operators)) (keys query))
-              (let [operation (first (keys query))
-                    conditions (get query operation)
-                    search-conditions (q/assembly-search-condition operation conditions)]
-                (q/bind-search-condition (.find collection search-conditions) conditions))
-              (let [search-conditions (q/assembly-search-condition nil [query])]
-                (q/bind-search-condition (.find collection search-conditions) [query])))))
-
+  (do-find
+   (let [l-operator (when (contains? q/logical-query-operators (first (keys query)))
+                      (first (keys query)))
+         conditions (get-conditions l-operator query)
+         search-conditions (q/assembly-search-condition l-operator conditions)]
+     (q/bind-search-condition (.find collection search-conditions) conditions))))

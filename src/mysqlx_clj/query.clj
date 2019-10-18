@@ -10,6 +10,10 @@
                                  :gte  ">="
                                  :lt   "<"
                                  :lte  "<="})
+(def sample-logical-query {:and [:eq {:field "foo"
+                                      :value "bar"}
+                                 :eq {:field "bar"
+                                      :value "foo"}]})
 (defn- hash-string
   [value]
   (str (Math/abs (hash value))))

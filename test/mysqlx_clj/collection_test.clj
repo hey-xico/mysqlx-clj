@@ -4,7 +4,8 @@
             [mysqlx-clj.config.docker-lifecycle :as docker]
             [mysqlx-clj.core :as core]
             [mysqlx-clj.collection :as target])
-  (:import (java.util UUID)))
+  (:import (java.util UUID)
+           (clojure.lang ExceptionInfo)))
 ;
 ; SETUP
 ;
@@ -385,5 +386,22 @@
       (is (not (nil? result)))
       (is (= 5
              (count result)))
+      ;after
+      (.dropCollection schema (.getName collection))))
+  (testing "quering with invalid logical structure"
+    (let [;given
+          connection-props {:host     (docker/host-address @container)
+                            :port     (docker/host-port @container)
+                            :dbname   (docker/connection-properties "MYSQL_DATABASE")
+                            :user     (docker/connection-properties "MYSQL_USER")
+                            :password (docker/connection-properties "MYSQL_PASSWORD")}
+          session (core/open-session connection-props)
+          schema (core/get-schema session (:dbname connection-props))
+          collection (.createCollection schema (random-string))
+          ;and
+          _ (target/insert! collection star-wars-fxt)]
+
+      (is (thrown-with-msg? ExceptionInfo #"Illegal query construction" (target/find collection {:and {:gte {:field "mass"
+                                                                                                             :value "75"}}})))
       ;after
       (.dropCollection schema (.getName collection)))))
