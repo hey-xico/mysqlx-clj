@@ -4,7 +4,8 @@
             [mysqlx-clj.config.docker-lifecycle :as docker]
             [mysqlx-clj.core :as core]
             [mysqlx-clj.collection :as target])
-  (:import (java.util UUID)))
+  (:import (java.util UUID)
+           (clojure.lang ExceptionInfo)))
 ;
 ; SETUP
 ;
@@ -23,7 +24,87 @@
                             (f)
                             (docker/destroy @container)))))
 
-
+(def star-wars-fxt [{:name       "Luke Skywalker",
+                     :height     "172",
+                     :mass       "77",
+                     :hair_color "blond",
+                     :skin_color "fair",
+                     :eye_color  "blue",
+                     :birth_year "19BBY",
+                     :gender     "male"}
+                    {:name       "C-3PO",
+                     :height     "167",
+                     :mass       "75",
+                     :hair_color "n/a",
+                     :skin_color "gold",
+                     :eye_color  "yellow",
+                     :birth_year "112BBY",
+                     :gender     "n/a"}
+                    {:name       "R2-D2",
+                     :height     "96",
+                     :mass       "32",
+                     :hair_color "n/a",
+                     :skin_color "white, blue",
+                     :eye_color  "red",
+                     :birth_year "33BBY",
+                     :gender     "n/a"}
+                    {:name       "Darth Vader",
+                     :height     "202",
+                     :mass       "136",
+                     :hair_color "none",
+                     :skin_color "white",
+                     :eye_color  "yellow",
+                     :birth_year "41.9BBY",
+                     :gender     "male"}
+                    {:mass       "49",
+                     :birth_year "19BBY",
+                     :skin_color "light",
+                     :name       "Leia Organa",
+                     :hair_color "brown",
+                     :gender     "female",
+                     :eye_color  "brown",
+                     :homeworld  "https//swapi.co/api/planets/2/",
+                     :height     "150"}
+                    {:name       "Owen Lars",
+                     :height     "178",
+                     :mass       "120",
+                     :hair_color "brown, grey",
+                     :skin_color "light",
+                     :eye_color  "blue",
+                     :birth_year "52BBY",
+                     :gender     "male"}
+                    {:name       "Beru Whitesun lars",
+                     :height     "165",
+                     :mass       "75",
+                     :hair_color "brown",
+                     :skin_color "light",
+                     :eye_color  "blue",
+                     :birth_year "47BBY",
+                     :gender     "female"}
+                    {:name       "R5-D4",
+                     :height     "97",
+                     :mass       "32",
+                     :hair_color "n/a",
+                     :skin_color "white, red",
+                     :eye_color  "red",
+                     :birth_year "unknown",
+                     :gender     "n/a"}
+                    {:name       "Biggs Darklighter",
+                     :height     "183",
+                     :mass       "84",
+                     :hair_color "black",
+                     :skin_color "light",
+                     :eye_color  "brown",
+                     :birth_year "24BBY",
+                     :gender     "male"}
+                    {:name       "Obi-Wan Kenobi",
+                     :height     "182",
+                     :mass       "77",
+                     :hair_color "auburn, white",
+                     :skin_color "fair",
+                     :eye_color  "blue-gray",
+                     :birth_year "57BBY",
+                     :gender     "male"}])
 ;
 ; TESTS
 ;
@@ -39,7 +120,6 @@
                             :password (docker/connection-properties "MYSQL_PASSWORD")}
           session (core/open-session connection-props)
           schema (core/get-schema session (:dbname connection-props))
-
           collection (.createCollection schema (random-string))
 
           ;and
@@ -67,7 +147,6 @@
                             :password (docker/connection-properties "MYSQL_PASSWORD")}
           session (core/open-session connection-props)
           schema (core/get-schema session (:dbname connection-props))
-
           collection (.createCollection schema (random-string))
 
           ;and
@@ -97,7 +176,6 @@
                             :password (docker/connection-properties "MYSQL_PASSWORD")}
           session (core/open-session connection-props)
           schema (core/get-schema session (:dbname connection-props))
-
           collection (.createCollection schema (random-string))
 
           ;and
@@ -126,11 +204,204 @@
                             :password (docker/connection-properties "MYSQL_PASSWORD")}
           session (core/open-session connection-props)
           schema (core/get-schema session (:dbname connection-props))
-
           collection (.createCollection schema (random-string))
           ;and
           result (target/find-by-id collection (random-string))]
 
       (is (nil? result))
+      ;after
+      (.dropCollection schema (.getName collection)))))
+
+(deftest find-statements
+  (testing "finding by single field"
+    (let [;given
+          connection-props {:host     (docker/host-address @container)
+                            :port     (docker/host-port @container)
+                            :dbname   (docker/connection-properties "MYSQL_DATABASE")
+                            :user     (docker/connection-properties "MYSQL_USER")
+                            :password (docker/connection-properties "MYSQL_PASSWORD")}
+          session (core/open-session connection-props)
+          schema (core/get-schema session (:dbname connection-props))
+          collection (.createCollection schema (random-string))
+
+          ;and
+          id-fxt (random-string)
+          document-fxt {:_id  id-fxt
+                        :name (random-string)}
+          query-fxt {:eq {:field "_id"
+                          :value id-fxt}}
+          ;and
+          _ (target/insert! collection document-fxt)
+
+          ;when
+          result (target/find collection query-fxt)]
+      (is (not (nil? result)))
+      (is (= 1
+             (count result)))
+      (is (= (:name document-fxt)
+             (:name (first result))))
+      ;after
+      (.dropCollection schema (.getName collection))))
+  (testing "finding by multiple fields"
+    (let [;given
+          connection-props {:host     (docker/host-address @container)
+                            :port     (docker/host-port @container)
+                            :dbname   (docker/connection-properties "MYSQL_DATABASE")
+                            :user     (docker/connection-properties "MYSQL_USER")
+                            :password (docker/connection-properties "MYSQL_PASSWORD")}
+          session (core/open-session connection-props)
+          schema (core/get-schema session (:dbname connection-props))
+          collection (.createCollection schema (random-string))
+
+          ;and
+          id-fxt (random-string)
+          name-fxt (random-string)
+          document-fxt {:_id  id-fxt
+                        :name name-fxt}
+          query-fxt {:and [{:eq {:field "_id"
+                                 :value id-fxt}}
+                           {:eq {:field "name"
+                                 :value name-fxt}}]}
+          ;and
+          _ (target/insert! collection document-fxt)
+
+          ;when
+          result (target/find collection query-fxt)]
+      (is (not (nil? result)))
+      (is (= (:name document-fxt)
+             (:name (first result))))
+      ;after
+      (.dropCollection schema (.getName collection))))
+
+  (testing "quering with like"
+    (let [;given
+          connection-props {:host     (docker/host-address @container)
+                            :port     (docker/host-port @container)
+                            :dbname   (docker/connection-properties "MYSQL_DATABASE")
+                            :user     (docker/connection-properties "MYSQL_USER")
+                            :password (docker/connection-properties "MYSQL_PASSWORD")}
+          session (core/open-session connection-props)
+          schema (core/get-schema session (:dbname connection-props))
+          collection (.createCollection schema (random-string))
+
+          ;and
+          _ (target/insert! collection star-wars-fxt)
+
+          ;when
+          leia-and-luke (target/find collection {:and [{:like {:field "birth_year"
+                                                               :value "19%"}}]})]
+      (is (not (nil? leia-and-luke)))
+      (is (= 2
+             (count leia-and-luke)))
+      ;after
+      (.dropCollection schema (.getName collection))))
+  (testing "quering with gt"
+    (let [;given
+          connection-props {:host     (docker/host-address @container)
+                            :port     (docker/host-port @container)
+                            :dbname   (docker/connection-properties "MYSQL_DATABASE")
+                            :user     (docker/connection-properties "MYSQL_USER")
+                            :password (docker/connection-properties "MYSQL_PASSWORD")}
+          session (core/open-session connection-props)
+          schema (core/get-schema session (:dbname connection-props))
+          collection (.createCollection schema (random-string))
+
+          ;and
+          _ (target/insert! collection star-wars-fxt)
+
+          ;when
+          result (target/find collection {:gt {:field "mass"
+                                               :value "75"}})]
+      (is (not (nil? result)))
+      (is (= 3
+             (count result)))
+      ;after
+      (.dropCollection schema (.getName collection))))
+
+  (testing "quering with greater than and equals to"
+    (let [;given
+          connection-props {:host     (docker/host-address @container)
+                            :port     (docker/host-port @container)
+                            :dbname   (docker/connection-properties "MYSQL_DATABASE")
+                            :user     (docker/connection-properties "MYSQL_USER")
+                            :password (docker/connection-properties "MYSQL_PASSWORD")}
+          session (core/open-session connection-props)
+          schema (core/get-schema session (:dbname connection-props)) collection (.createCollection schema (random-string))
+
+          ;and
+          _ (target/insert! collection star-wars-fxt)
+
+          ;when
+          result (target/find collection {:gte {:field "mass"
+                                                :value "75"}})]
+      (is (not (nil? result)))
+      (is (= 5
+             (count result)))
+      ;after
+      (.dropCollection schema (.getName collection))))
+
+  (testing "quering with between using gt and lt"
+    (let [;given
+          connection-props {:host     (docker/host-address @container)
+                            :port     (docker/host-port @container)
+                            :dbname   (docker/connection-properties "MYSQL_DATABASE")
+                            :user     (docker/connection-properties "MYSQL_USER")
+                            :password (docker/connection-properties "MYSQL_PASSWORD")}
+          session (core/open-session connection-props)
+          schema (core/get-schema session (:dbname connection-props))
+          collection (.createCollection schema (random-string))
+
+          ;and
+          _ (target/insert! collection star-wars-fxt)
+
+          ;when
+          result (target/find collection {:and [{:gt {:field "mass"
+                                                      :value "75"}}
+                                                {:lt {:field "mass"
+                                                      :value "84"}}]})]
+      (is (not (nil? result)))
+      (is (= 2
+             (count result)))
+      ;after
+      (.dropCollection schema (.getName collection))))
+  (testing "quering with between using gte and lte"
+    (let [;given
+          connection-props {:host     (docker/host-address @container)
+                            :port     (docker/host-port @container)
+                            :dbname   (docker/connection-properties "MYSQL_DATABASE")
+                            :user     (docker/connection-properties "MYSQL_USER")
+                            :password (docker/connection-properties "MYSQL_PASSWORD")}
+          session (core/open-session connection-props)
+          schema (core/get-schema session (:dbname connection-props))
+          collection (.createCollection schema (random-string))
+          ;and
+          _ (target/insert! collection star-wars-fxt)
+
+          ;when
+          result (target/find collection {:and [{:gte {:field "mass"
+                                                       :value "75"}}
+                                                {:lte {:field "mass"
+                                                       :value "84"}}]})]
+
+      (is (not (nil? result)))
+      (is (= 5
+             (count result)))
+      ;after
+      (.dropCollection schema (.getName collection))))
+  (testing "quering with invalid logical structure"
+    (let [;given
+          connection-props {:host     (docker/host-address @container)
+                            :port     (docker/host-port @container)
+                            :dbname   (docker/connection-properties "MYSQL_DATABASE")
+                            :user     (docker/connection-properties "MYSQL_USER")
+                            :password (docker/connection-properties "MYSQL_PASSWORD")}
+          session (core/open-session connection-props)
+          schema (core/get-schema session (:dbname connection-props))
+          collection (.createCollection schema (random-string))
+          ;and
+          _ (target/insert! collection star-wars-fxt)]
+
+      (is (thrown-with-msg? ExceptionInfo #"Illegal query construction" (target/find collection {:and {:gte {:field "mass"
+                                                                                                             :value "75"}}})))
       ;after
       (.dropCollection schema (.getName collection)))))
