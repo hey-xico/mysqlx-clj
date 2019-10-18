@@ -28,10 +28,10 @@
 
 (defn find [collection query]
   (do-find  (if (some (set (keys q/logical-query-operators)) (keys query))
-             (let [operation (first (keys query))
-                   conditions (get query operation)
-                   search-conditions (q/assembly-search-condition operation conditions)]
-               (q/bind-search-condition (.find collection search-conditions) conditions))
-             (let [search-conditions (q/assembly-search-condition nil [query])]
-               (q/bind-search-condition (.find collection search-conditions) [query])))))
+              (let [operation (first (keys query))
+                    conditions (get query operation)
+                    search-conditions (q/assembly-search-condition operation conditions)]
+                (q/bind-search-condition (.find collection search-conditions) conditions))
+              (let [search-conditions (q/assembly-search-condition nil [query])]
+                (q/bind-search-condition (.find collection search-conditions) [query])))))
 

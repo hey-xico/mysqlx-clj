@@ -12,8 +12,8 @@
 (def container (atom nil))
 (defn random-string []
   (first
-    (shuffle
-      (split (.toString (UUID/randomUUID)) #"-"))))
+   (shuffle
+    (split (.toString (UUID/randomUUID)) #"-"))))
 
 (use-fixtures :once (fn [f]
                       (if (= (System/getenv "RUNNING_LOCAL") "true")
