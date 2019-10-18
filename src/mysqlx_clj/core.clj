@@ -90,6 +90,4 @@
       (commit session)
       r)
     (catch Exception e
-      (do
-        (println "ERRO: " (.getMessage e))
-        (rollback session)))))
+        (rollback session))))

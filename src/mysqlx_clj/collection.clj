@@ -1,18 +1,18 @@
 (ns mysqlx-clj.collection
-  (:require [cheshire.core :refer :all])
+  (:require [cheshire.core :refer :all]
+            [mysqlx-clj.query :as q])
   (:import (com.mysql.cj.xdevapi JsonParser AddStatementImpl Collection)))
 
 (defn- do-find [statement]
   (if-let [document (-> statement
                         .execute
-                        .fetchOne)]
+                        .fetchAll)]
     (parse-string (str document) true)))
 
 (defn find-by-id
   "Returns a single document with matching _id field."
   [^Collection collection id]
-  (do-find (-> (.find collection "_id = :_id")
-               (.bind "_id" id))))
+  (first (do-find (.bind (.find collection "_id = :_id") "_id" id))))
 
 (defn insert!
   "Saves document to collection and returns the inserted document as a persistent Clojure map."
@@ -27,9 +27,11 @@
     (reduce #(conj %1 (insert! collection %2)) [] document)))
 
 (defn find [collection query]
-  (let [search-conditions (str (-> query :eq :field) " = :" (-> query :eq :field))
-        find-stm (-> (.find collection search-conditions)
-                     (.bind (-> query :eq :field) (-> query :eq :value)))]
-    (do-find find-stm)))
-
+  (do-find  (if (some (set (keys q/logical-query-operators)) (keys query))
+             (let [operation (first (keys query))
+                   conditions (get query operation)
+                   search-conditions (q/assembly-search-condition operation conditions)]
+               (q/bind-search-condition (.find collection search-conditions) conditions))
+             (let [search-conditions (q/assembly-search-condition nil [query])]
+               (q/bind-search-condition (.find collection search-conditions) [query])))))
 
