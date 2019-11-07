@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.0.1-beta3] — 2019-11-07
+
 ## [0.0.1-beta2] — 2019-11-07
 
 ## [0.0.1-beta1] — 2019-11-07
@@ -23,4 +25,5 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 [0.0.1-beta1]: https://github.com/Chicoalmeida/mysqlx-clj/compare/0.0.0...0.0.1-beta1
 [0.0.1-beta2]: https://github.com/Chicoalmeida/mysqlx-clj/compare/0.0.1-beta1...0.0.1-beta2
-[Unreleased]: https://github.com/Chicoalmeida/mysqlx-clj/compare/0.0.1-beta2...HEAD
+[0.0.1-beta3]: https://github.com/Chicoalmeida/mysqlx-clj/compare/0.0.1-beta2...0.0.1-beta3
+[Unreleased]: https://github.com/Chicoalmeida/mysqlx-clj/compare/0.0.1-beta3...HEAD

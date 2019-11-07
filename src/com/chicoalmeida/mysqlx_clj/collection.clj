@@ -1,7 +1,12 @@
 (ns com.chicoalmeida.mysqlx-clj.collection
   (:require [cheshire.core :refer :all]
             [com.chicoalmeida.mysqlx-clj.query :as q])
-  (:import (com.mysql.cj.xdevapi JsonParser AddStatementImpl Collection)))
+  (:import (com.mysql.cj.xdevapi JsonParser AddStatementImpl Collection Schema)))
+
+(defn get-collection
+  "Returns an existing collection from a valid schema"
+  [^Schema schema collection-name]
+  (.getCollection schema collection-name true))
 
 (defn- do-find [statement]
   (if-let [document (-> statement
@@ -35,10 +40,11 @@
                         {:message (str "When using logical operator, the comparisons must be inside a vector:" q/sample-logical-query)})))
       c)
     [query]))
+
 (defn find [collection query]
   (do-find
-   (let [l-operator (when (contains? q/logical-query-operators (first (keys query)))
-                      (first (keys query)))
-         conditions (get-conditions l-operator query)
-         search-conditions (q/assembly-search-condition l-operator conditions)]
-     (q/bind-search-condition (.find collection search-conditions) conditions))))
+    (let [l-operator (when (contains? q/logical-query-operators (first (keys query)))
+                       (first (keys query)))
+          conditions (get-conditions l-operator query)
+          search-conditions (q/assembly-search-condition l-operator conditions)]
+      (q/bind-search-condition (.find collection search-conditions) conditions))))

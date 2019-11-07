@@ -5,7 +5,8 @@
             [com.chicoalmeida.mysqlx-clj.core :as core]
             [com.chicoalmeida.mysqlx-clj.collection :as target])
   (:import (java.util UUID)
-           (clojure.lang ExceptionInfo)))
+           (clojure.lang ExceptionInfo)
+           (com.mysql.cj.exceptions WrongArgumentException)))
 ;
 ; SETUP
 ;
@@ -13,8 +14,8 @@
 (def container (atom nil))
 (defn random-string []
   (first
-   (shuffle
-    (split (.toString (UUID/randomUUID)) #"-"))))
+    (shuffle
+      (split (.toString (UUID/randomUUID)) #"-"))))
 
 (use-fixtures :once (fn [f]
                       (if (= (System/getenv "RUNNING_LOCAL") "true")
@@ -405,3 +406,37 @@
                                                                                                              :value "75"}}})))
       ;after
       (.dropCollection schema (.getName collection)))))
+
+(deftest retrieve-collection
+  (testing "given valid schema and an existing collection retrieve it"
+    (let [;given
+          connection-props {:host     (docker/host-address @container)
+                            :port     (docker/host-port @container)
+                            :dbname   (docker/connection-properties "MYSQL_DATABASE")
+                            :user     (docker/connection-properties "MYSQL_USER")
+                            :password (docker/connection-properties "MYSQL_PASSWORD")}
+          session (core/open-session connection-props)
+          schema (core/get-schema session (:dbname connection-props))
+          collection-name (random-string)
+          collection (.createCollection schema collection-name)
+          ;and
+          result (target/get-collection schema collection-name)]
+
+      (is (not (nil? result)))
+      ;after
+      (.dropCollection schema collection-name))
+    )
+  (testing "given valid schema and a collection that not exists fail "
+    (let [;given
+          connection-props {:host     (docker/host-address @container)
+                            :port     (docker/host-port @container)
+                            :dbname   (docker/connection-properties "MYSQL_DATABASE")
+                            :user     (docker/connection-properties "MYSQL_USER")
+                            :password (docker/connection-properties "MYSQL_PASSWORD")}
+          session (core/open-session connection-props)
+          schema (core/get-schema session (:dbname connection-props))
+          collection-name (random-string)]
+
+      (is (thrown-with-msg? WrongArgumentException #" doesn't exist" (target/get-collection schema collection-name)))
+      (.dropCollection schema collection-name))
+    ))

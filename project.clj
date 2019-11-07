@@ -1,4 +1,4 @@
-(defproject chicoalmeida/mysqlx-clj "0.0.1-beta2"
+(defproject chicoalmeida/mysqlx-clj "0.0.1-beta3"
   :description "FIXME: write description"
   :url "https://github.com/chicoalmeida/mysqlx-clj"
   :signing {:gpg-key "francisco.rl.almeida@gmail.com"}
