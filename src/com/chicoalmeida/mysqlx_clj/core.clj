@@ -1,4 +1,4 @@
-(ns mysqlx-clj.core
+(ns com.chicoalmeida.mysqlx-clj.core
   (:require [clojure.spec.alpha :as s]
             [clojure.walk :refer [stringify-keys postwalk]])
   (:import (com.mysql.cj.xdevapi SessionFactory Session Schema)

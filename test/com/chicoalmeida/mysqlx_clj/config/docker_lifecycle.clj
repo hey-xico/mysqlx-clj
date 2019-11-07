@@ -1,4 +1,4 @@
-(ns mysqlx-clj.config.docker-lifecycle
+(ns com.chicoalmeida.mysqlx-clj.config.docker-lifecycle
   (:import (org.testcontainers.containers GenericContainer)
            (org.testcontainers.containers.wait.strategy Wait)))
 

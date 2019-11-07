@@ -1,6 +1,6 @@
-(ns mysqlx-clj.collection
+(ns com.chicoalmeida.mysqlx-clj.collection
   (:require [cheshire.core :refer :all]
-            [mysqlx-clj.query :as q])
+            [com.chicoalmeida.mysqlx-clj.query :as q])
   (:import (com.mysql.cj.xdevapi JsonParser AddStatementImpl Collection)))
 
 (defn- do-find [statement]

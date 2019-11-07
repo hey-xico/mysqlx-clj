@@ -1,9 +1,9 @@
-(ns mysqlx-clj.collection-test
+(ns com.chicoalmeida.mysqlx-clj.collection-test
   (:require [clojure.test :refer :all]
             [clojure.string :refer [split]]
-            [mysqlx-clj.config.docker-lifecycle :as docker]
-            [mysqlx-clj.core :as core]
-            [mysqlx-clj.collection :as target])
+            [com.chicoalmeida.mysqlx-clj.config.docker-lifecycle :as docker]
+            [com.chicoalmeida.mysqlx-clj.core :as core]
+            [com.chicoalmeida.mysqlx-clj.collection :as target])
   (:import (java.util UUID)
            (clojure.lang ExceptionInfo)))
 ;

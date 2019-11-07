@@ -1,6 +1,6 @@
-(ns mysqlx-clj.query-test
+(ns com.chicoalmeida.mysqlx-clj.query-test
   (:require [clojure.test :refer :all])
-  (:require [mysqlx-clj.query :as target])
+  (:require [com.chicoalmeida.mysqlx-clj.query :as target])
   (:import (clojure.lang ExceptionInfo)))
 
 (deftest create-search-condition-structure

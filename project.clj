@@ -1,8 +1,9 @@
-(defproject mysqlx-clj "0.0.1"
+(defproject chicoalmeida/mysqlx-clj "0.0.1-beta2"
   :description "FIXME: write description"
-  :url "https://github.com/Chicoalmeida/mysqlx-clj"
-  :license {:name "Eclipse Public License"
-            :url  "http://www.eclipse.org/legal/epl-v10.html"}
+  :url "https://github.com/chicoalmeida/mysqlx-clj"
+  :signing {:gpg-key "francisco.rl.almeida@gmail.com"}
+  :license {:name "MIT"
+            :url  "https://opensource.org/licenses/MIT"}
   :dependencies [[cheshire "5.9.0"]
                  [mysql/mysql-connector-java "8.0.18"]]
   :plugins [[lein-cloverage "1.0.13"]
@@ -25,7 +26,7 @@
                                     [org.slf4j/log4j-over-slf4j "1.7.28"]
                                     [org.testcontainers/testcontainers "1.12.2"]]}}
   :deploy-repositories [["releases" :clojars]]
-  :aliases {"update-readme-version" ["shell" "sed" "-i" "s/\\\\[mysqlx-clj \"[0-9.]*\"\\\\]/[mysqlx-clj \"${:version}\"]/" "README.md"]}
+  :aliases {"update-readme-version" ["shell" "sed" "-i" "s/\\\\[chicoalmeida/mysqlx-clj \"[0-9.]*\"\\\\]/[chicoalmeida/mysqlx-clj \"${:version}\"]/" "README.md"]}
   :release-tasks [["shell" "git" "diff" "--exit-code"]
                   ["change" "version" "leiningen.release/bump-version"]
                   ["change" "version" "leiningen.release/bump-version" "release"]

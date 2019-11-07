@@ -1,4 +1,4 @@
-(ns mysqlx-clj.query
+(ns com.chicoalmeida.mysqlx-clj.query
   (:import (com.mysql.cj.xdevapi FindStatementImpl)))
 
 (def logical-query-operators {:and "AND"
